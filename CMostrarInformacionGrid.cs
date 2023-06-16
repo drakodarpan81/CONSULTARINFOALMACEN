@@ -54,8 +54,8 @@ namespace CONSULTARINFOALMACEN
                 NpgsqlConnection conn = new NpgsqlConnection();
                 if (CConeccion.conexionPostgre(ep, ref conn, ref sError))
                 {
-                    sConsulta = String.Format(" SELECT folio_articulo, numero_categoria, nombre_categoria, nombre_articulo, cantidad, stock, des_presentacion, nombre_proveedor, requisicion, fecha_caducidad, lote_caducidad, " + 
-                                              "        marca_caducidad, observacion, id_empleado, folio_movimiento, fecha_modificacion " +
+                    sConsulta = String.Format(" SELECT folio_articulo, numero_categoria, nombre_categoria, nombre_articulo, cantidad, stock, des_presentacion, nombre_proveedor, requisicion, fecha_caducidad, lote_caducidad, " +
+                                              "        marca_caducidad, observacion, des_nombreusuario, folio_movimiento, fecha_modificacion " +
                                               " FROM fConsultar_informacion_almacen({0}::SMALLINT, {1}::INTEGER, {2}::INTEGER, {3}::SMALLINT, '{4}'::DATE, '{5}'::DATE, {6}::SMALLINT, '{7}')"
                                               , nOpcion, nCategoria, nFolio, nConsultaFechas, sFechaInicial, sFechaFinal, nDescontinuado, sLote);
                     NpgsqlCommand com = new NpgsqlCommand(sConsulta, conn);
@@ -116,7 +116,7 @@ namespace CONSULTARINFOALMACEN
                         Grid.Rows[nRenglon].Cells["OBSERVACION"].Value = reader["observacion"].ToString().Trim();
                         Grid.Rows[nRenglon].Cells["OBSERVACION"].Style = cell;
 
-                        Grid.Rows[nRenglon].Cells["EMPLEADO"].Value = reader["id_empleado"].ToString().Trim();
+                        Grid.Rows[nRenglon].Cells["EMPLEADO"].Value = reader["des_nombreusuario"].ToString().Trim();
                         Grid.Rows[nRenglon].Cells["EMPLEADO"].Style = cell;
 
                         sFecha = reader["fecha_modificacion"].ToString();

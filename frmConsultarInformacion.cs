@@ -146,18 +146,21 @@ namespace CONSULTARINFOALMACEN
         {
             cmbCodigos.Enabled = true;
             cmbCategorias.Enabled= false;
+            txtLote.Enabled = false;
         }
 
         private void rdbCategoria_CheckedChanged(object sender, EventArgs e)
         {
             cmbCodigos.Enabled= false;
             cmbCategorias.Enabled = true;
+            txtLote.Enabled = false;
         }
 
         private void rdbLote_CheckedChanged(object sender, EventArgs e)
         {
             cmbCodigos.Enabled = false;
             cmbCategorias.Enabled = false;
+            txtLote.Enabled = true;
         }
 
         private void chkRangoFechas_CheckedChanged(object sender, EventArgs e)
@@ -311,11 +314,12 @@ namespace CONSULTARINFOALMACEN
 
         public void fGenerarPDF()
         {
-            string sDireccion = @"C:\ALMACEN\FORMATOS\", sDato = "";
+            string sDireccion = @"C:\LESP\FORMATOS\", sDato = "";
             Int32 nContador = 0;
             bool valorRegresa = false;
             Int32 numberOfPages = 0, nTamanioFuente = 10, nTamanioFuenteGrid = 8;
             List<string> encabezado = new List<string>();
+            iText.Layout.Element.Paragraph p = new Paragraph();
 
             if (MessageBox.Show("¿Desea generar el archivo PDF?", sTitulo, MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
             {
@@ -338,8 +342,7 @@ namespace CONSULTARINFOALMACEN
                 {
                     if(valorRegresa)
                     {
-                        iText.Layout.Element.Paragraph p = new Paragraph();
-                        var sRuta = @"C:\ALMACEN\FORMATOS\Control_inventarios.pdf";
+                        var sRuta = @"C:\LESP\FORMATOS\Control_inventarios.pdf";
 
                         PdfWriter writer = new PdfWriter(sRuta);
                         PdfDocument pdfDoc = new PdfDocument(writer);

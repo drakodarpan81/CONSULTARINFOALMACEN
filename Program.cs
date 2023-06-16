@@ -8,6 +8,7 @@ using System.Windows.Forms;
 
 namespace CONSULTARINFOALMACEN
 {
+/*
     internal static class Program
     {
         /// <summary>
@@ -29,4 +30,5 @@ namespace CONSULTARINFOALMACEN
             Application.Run(new frmConsultarInformacion(ep));
         }
     }
+//*/
 }

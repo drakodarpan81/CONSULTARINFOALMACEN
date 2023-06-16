@@ -1,4 +1,11 @@
-DROP FUNCTION fConsultar_informacion_almacen();
+DROP FUNCTION fConsultar_informacion_almacen(opcion SMALLINT, 
+														  nCategoria INTEGER, 
+														  nFolio INTEGER,
+														  nConsultaFecha SMALLINT,
+														  dFechaInicio DATE, 
+														  dFechaFin DATE, 
+														  nStatus SMALLINT,
+														  sLote VARCHAR(50));
 DROP TYPE type_consultar_historial;
 
 CREATE TYPE type_consultar_historial AS
@@ -16,14 +23,15 @@ CREATE TYPE type_consultar_historial AS
 	lote_caducidad		VARCHAR(20),
 	marca_caducidad		VARCHAR(50),
 	observacion 		VARCHAR(100),
-	id_empleado			INTEGER,
+	des_nombreusuario	VARCHAR(150),
 	folio_movimiento	INTEGER,
 	fecha_modificacion	DATE
 );
 
 CREATE OR REPLACE FUNCTION fConsultar_informacion_almacen(opcion SMALLINT, 
 														  nCategoria INTEGER, 
-														  nFolio INTEGER, 
+														  nFolio INTEGER,
+														  nConsultaFecha SMALLINT,
 														  dFechaInicio DATE, 
 														  dFechaFin DATE, 
 														  nStatus SMALLINT,
@@ -36,13 +44,26 @@ $$
 		nId INTEGER;
 		cSql VARCHAR;
 		cStatus VARCHAR;
+		cFechas VARCHAR;
 
 	BEGIN
+
+		cSql = '';
+		cStatus = '';
+		cFechas = '';
 
 		SELECT id
 		INTO nId
 		FROM tb_categorias
 		WHERE numero_categoria = nCategoria;
+		
+		IF opcion = 0 THEN
+			cSql = 'WHERE a.numero_categoria_id = '||nId||' AND a.folio_articulo = '||nFolio;
+		ELSIF opcion = 1 THEN
+			cSql = 'WHERE a.numero_categoria_id = '||nId;			
+		ELSIF opcion = 2 THEN
+			cSql = 'WHERE a.lote_caducidad = '''||sLote||''' ';
+		END IF;
 		
 		IF nStatus = 0 THEN
 			cStatus = ' AND a.status = 0';
@@ -50,35 +71,29 @@ $$
 			cStatus = ' AND a.status = 1';
 		END IF;
 		
-		IF opcion = 0 THEN
-			cSql = 'WHERE a.numero_categoria_id = '||nId||' AND a.folio_articulo = '||nFolio;
-		ELSIF opcion = 1 THEN
-			cSql = 'WHERE a.numero_categoria_id = '||nId;			
-		ELSIF opcion = 2 THEN
-			cSql = 'WHERE a.numero_categoria_id = '||nId||' AND a.folio_articulo = '||nFolio||' AND a.fecha_modificacion BETWEEN '''||dFechaInicio||''' AND '''||dFechaFin||''' ';
-		ELSIF opcion = 3 THEN
-			cSql = 'WHERE a.numero_categoria_id = '||nId||' AND a.fecha_modificacion BETWEEN '''||dFechaInicio||''' AND '''||dFechaFin||''' ';
-		ELSIF opcion = 4 THEN
-			cSql = 'WHERE a.lote_caducidad = '''||sLote||''' ';
+		IF nConsultaFecha = 1 THEN
+			cFechas = ' AND a.fecha_modificacion BETWEEN '''||dFechaInicio||''' AND '''||dFechaFin||''' ';
 		END IF;
 		
 		FOR reg IN EXECUTE FORMAT('SELECT a.folio_articulo, b.numero_categoria, b.nombre_categoria, a.nombre_articulo, a.cantidad, a.stock, c.des_presentacion, d.nombre_proveedor, 
-										  a.requisicion, a.fecha_caducidad, a.lote_caducidad, a.marca_caducidad, a.observacion, a.id_empleado, a.folio_movimiento, 
+										  a.requisicion, a.fecha_caducidad, a.lote_caducidad, a.marca_caducidad, a.observacion, T2.des_nombreusuario, a.folio_movimiento, 
 										  a.fecha_modificacion
 								   FROM tb_his_articulos_almacen AS a
 								   JOIN tb_categorias AS b ON (a.numero_categoria_id = b.id)
 								   JOIN tb_presentacion AS c ON (a.presentacion_id = c.id)
-								   JOIN tb_proveedor AS d ON (a.proveedor_id = d.id)
+								   JOIN tb_proveedor AS d ON (a.proveedor_id = d.id),
+								   dblink(''dbname=personalLESP user=personal password=be422fac5ea0da9dbd3434162cd8ccff'', ''SELECT id_identificador, des_nombreusuario FROM cat_personal'') AS T2 (id_identificador INTEGER, des_nombreusuario VARCHAR(150))
 								   '|| cSql ||'
 								   '|| cStatus ||'
+								   '|| cFechas ||'
+								   AND a.id_empleado = T2.id_identificador
 								   ORDER BY a.numero_categoria_id, a.folio_articulo')
 		LOOP
 			RETURN NEXT reg;
 		END LOOP;
-
 		RETURN;
 	
 	END
 
 $$
-LANGUAGE 'plpgsql' VOLATILE;
+LANGUAGE 'plpgsql';
